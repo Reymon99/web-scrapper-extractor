@@ -3,8 +3,8 @@ import csv
 import datetime
 import logging
 import re
-from requests.exceptions import HTTPError, ContentDecodingError
-from urllib3.exceptions import MaxRetryError, DecodeError
+from requests.exceptions import HTTPError, ContentDecodingError, ConnectionError
+from urllib3.exceptions import MaxRetryError, DecodeError, TimeoutError, NewConnectionError
 from extract import news_page_objects as news
 from extract.common import config
 
@@ -43,7 +43,8 @@ def _fetch_article(news_site_uid, host, link):
     article = None
     try:
         article = news.ArticlePage(news_site_uid, _build_link(host, link))
-    except (HTTPError, MaxRetryError, DecodeError, ContentDecodingError) as e:
+    except (HTTPError, MaxRetryError, DecodeError, ContentDecodingError,
+            TimeoutError, NewConnectionError, ConnectionError) as e:
         logger.warning('Error while fetching the article', exc_info=False)
     if article and not article.body:
         logger.warning('Invalid article. There is no body')

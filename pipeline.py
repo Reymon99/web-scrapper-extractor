@@ -19,7 +19,7 @@ def _load():
 def _extract():
     logger.info('Starting extract process')
     for news_site_uid in news_sites_uids:
-        # subprocess.run(['python', 'newspaper_created.py', news_site_uid], cwd='./extract')
+        subprocess.run(['python', 'newspaper_created.py', news_site_uid], cwd='./extract')
         path = '.\\extract'
         file = _search_file(path, news_site_uid)
         _move_file(path + '\\' + file, '.\\transform\\' + file)
