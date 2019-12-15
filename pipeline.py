@@ -8,14 +8,6 @@ logger = logging.getLogger(__name__)
 news_sites_uids = ['eluniversal', 'elpais']
 
 
-def _load():
-    logger.info('Starting load process')
-    for news_site_uid in news_sites_uids:
-        clean_data_filename = _search_file('.\\load', news_site_uid)
-        subprocess.run(['python', 'load_db.py', clean_data_filename], cwd='./load')
-        subprocess.run(['del', clean_data_filename], cwd='./load')  # Windows: del | Unix: rm | Eliminar un archivo
-
-
 def _extract():
     logger.info('Starting extract process')
     for news_site_uid in news_sites_uids:
@@ -23,6 +15,29 @@ def _extract():
         path = '.\\extract'
         file = _search_file(path, news_site_uid)
         _move_file(path + '\\' + file, '.\\transform\\' + file)
+
+
+def _transform():
+    logger.info('Starting transform process')
+    for news_site_uid in news_sites_uids:
+        dirty_data_filename = _search_file('.\\transform', news_site_uid)
+        clean_data_filename = f'clean_{dirty_data_filename}'
+        subprocess.run(['python', 'newspaper_receipe.py', dirty_data_filename], cwd='./transform')
+        _remove_file('.\\transform', dirty_data_filename)
+        _move_file('.\\transform\\' + clean_data_filename, '.\\load\\' + clean_data_filename)
+
+
+def _load():
+    logger.info('Starting load process')
+    for news_site_uid in news_sites_uids:
+        clean_data_filename = _search_file('.\\load', news_site_uid)
+        subprocess.run(['python', 'load_db.py', clean_data_filename], cwd='./load')
+        _remove_file('.\\load', clean_data_filename)
+
+
+def _remove_file(path, file):
+    logger.info(f'Removing file {file}')
+    os.remove(f'{path}\\{file}')
 
 
 def _search_file(path, file_match):
@@ -40,23 +55,19 @@ def _move_file(origen, destino):
     shutil.move(origen, destino)
 
 
-def _transform():
-    logger.info('Starting transform process')
-    for news_site_uid in news_sites_uids:
-        dirty_data_filename = _search_file('.\\transform', news_site_uid)
-        clean_data_filename = f'clean_{dirty_data_filename}'
-        subprocess.run(['python', 'newspaper_receipe.py', dirty_data_filename], cwd='./transform')
-        subprocess.run(['del', dirty_data_filename], cwd='./transform')  # Windows: del | Unix: rm | Eliminar un archivo
-        _move_file('.\\transform\\' + clean_data_filename, '.\\load\\' + clean_data_filename)
-
-
 def main():
     try:
+        logger.info('Starting ETL process')
         _extract()
         _transform()
         _load()
-    except:
-        logger.warning('Error process')
+        logger.info('ETL process finished')
+    except FileNotFoundError as err:
+        logger.warning(str(err))
+    except Exception as e:
+        logger.warning('Process Error')
+        logger.warning(str(e))
+        # e.with_traceback()
 
 
 if __name__ == '__main__':

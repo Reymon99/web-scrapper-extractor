@@ -43,8 +43,13 @@ def _fetch_article(news_site_uid, host, link):
     article = None
     try:
         article = news.ArticlePage(news_site_uid, _build_link(host, link))
-    except (HTTPError, MaxRetryError, DecodeError, ContentDecodingError,
-            TimeoutError, NewConnectionError, ConnectionError) as e:
+    except (HTTPError,
+            MaxRetryError,
+            DecodeError,
+            ContentDecodingError,
+            TimeoutError,
+            NewConnectionError,
+            ConnectionError):
         logger.warning('Error while fetching the article', exc_info=False)
     if article and not article.body:
         logger.warning('Invalid article. There is no body')

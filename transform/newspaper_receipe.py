@@ -3,7 +3,6 @@ import logging
 from urllib.parse import urlparse
 import pandas as pd
 import hashlib
-import datetime
 import nltk
 from nltk.corpus import stopwords
 
@@ -11,8 +10,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def main(filename) -> pd.DataFrame:
-    df = None
+def main(filename):
     try:
         logger.info('Starting cleaning process')
         df = _read_data(filename)
@@ -26,10 +24,8 @@ def main(filename) -> pd.DataFrame:
         df = _remove_duplicate_entries(df, 'title')
         df = _drop_rows_with_missing_values(df)
         _save_data(df, filename)
-    except FileNotFoundError as e:
+    except FileNotFoundError:
         logger.info('Unable to generate the DataFrame')
-    finally:
-        return df
 
 
 def _drop_rows_with_missing_values(df: pd.DataFrame) -> pd.DataFrame:
@@ -126,6 +122,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
     # with pd.option_context('display.max_columns', 5):
     #     with pd.option_context('display.max_rows', 157):
-    now = datetime.datetime.now()
-    print(main(args.filename))
-    print(datetime.datetime.now() - now)
+    main(args.filename)

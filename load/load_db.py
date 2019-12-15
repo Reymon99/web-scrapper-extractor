@@ -20,7 +20,7 @@ def main(filename):
             session.add(article)
         session.commit()
         session.close()
-    except FileNotFoundError as e:
+    except FileNotFoundError:
         logger.info('No data found')
 
 
